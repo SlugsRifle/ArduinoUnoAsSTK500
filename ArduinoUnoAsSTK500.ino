@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #include "SPI.h"
 #include "command.h"
 
@@ -13,7 +11,6 @@
 
 volatile uint8_t rbuf[275];
 volatile uint8_t sbuf[275];
-
 volatile uint32_t addr;
 
 void setup() {
@@ -79,6 +76,33 @@ void signOn(uint8_t sn) {
   sendMessage(sn,11);
 }
 
+//Not Implemented
+void setParameter(uint8_t sn) {
+  sbuf[0] = CMD_SET_PARAMETER;
+  sbuf[1] = STATUS_CMD_OK;
+
+  if (rbuf[1] == PARAM_VTARGET) { //0x95
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_VADJUST) { //0x95
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_OSC_PSCALE) { //0x96
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_OSC_CMATCH) { //0x97
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_SCK_DURATION) { //0x98
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_RESET_POLARITY) { //0x98
+    sbuf[2] = 0x00;
+  } else if (rbuf[1] == PARAM_CONTROLLER_INIT) { //0x98
+    sbuf[2] = 0x00;
+  } else {
+    sbuf[1] = STATUS_CMD_FAILED;
+    sendMessage(sn, 2);
+    return;
+  }
+  sendMessage(sn, 2);
+}
+
 void getParameter(uint8_t sn) {
   sbuf[0] = CMD_GET_PARAMETER;
   sbuf[1] = STATUS_CMD_OK;
@@ -126,32 +150,6 @@ void loadAddress(uint8_t sn) {
   sbuf[1] = STATUS_CMD_OK;
   sendMessage(sn, 2);
 } 
-
-void setParameter(uint8_t sn) {
-  sbuf[0] = CMD_SET_PARAMETER;
-  sbuf[1] = STATUS_CMD_OK;
-
-  if (rbuf[1] == PARAM_VTARGET) { //0x95
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_VADJUST) { //0x95
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_OSC_PSCALE) { //0x96
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_OSC_CMATCH) { //0x97
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_SCK_DURATION) { //0x98
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_RESET_POLARITY) { //0x98
-    sbuf[2] = 0x00;
-  } else if (rbuf[1] == PARAM_CONTROLLER_INIT) { //0x98
-    sbuf[2] = 0x00;
-  } else {
-    sbuf[1] = STATUS_CMD_FAILED;
-    sendMessage(sn, 2);
-    return;
-  }
-  sendMessage(sn, 2);
-}
 
 void enterProgramMode(uint8_t sn) {
   uint8_t timeout = rbuf[1], stabDelay = rbuf[2], cmdexeDelay = rbuf[3], synchLoops = rbuf[4],
@@ -297,6 +295,7 @@ uint8_t programFuse(uint8_t sn) {
   sendMessage(sn, 3);
 }
 
+//Not Implement TimeOut and CheckSumError
 uint8_t recvMessage() {
   uint8_t sn = 0;
   uint8_t st = 0,ch = 0, cs = 0;
