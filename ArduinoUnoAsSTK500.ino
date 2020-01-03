@@ -9,6 +9,10 @@
 #define BAUDRATE  115200
 #define SPI_CLOCK 115200
 
+#define HW_VER 0x02
+#define SW_MAJOR 0x02
+#define SW_MINOR 0x0a
+
 volatile uint8_t rbuf[275];
 volatile uint8_t sbuf[275];
 volatile uint32_t addr;
@@ -112,11 +116,11 @@ void getParameter(uint8_t sn) {
   } else if (rbuf[1] == PARAM_BUILD_NUMBER_HIGH) { //0x81
     sbuf[2] = 0x01;
   } else if (rbuf[1] == PARAM_HW_VER) { //0x90
-    sbuf[2] = 0x02;
+    sbuf[2] = HW_VER;
   } else if (rbuf[1] == PARAM_SW_MAJOR) { //0x91 
-    sbuf[2] = 0x02;
+    sbuf[2] = SW_MAJOR;
   } else if (rbuf[1] == PARAM_SW_MINOR) { //0x92
-    sbuf[2] = 0x0a;
+    sbuf[2] = SW_MINOR;
   } else if (rbuf[1] == PARAM_VTARGET) { //0x95
     sbuf[2] = 0x32; //50
   } else if (rbuf[1] == PARAM_VADJUST) { //0x95
