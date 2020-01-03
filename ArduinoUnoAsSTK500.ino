@@ -61,7 +61,11 @@ void loop(void) {
     readLock(sn);
   } else if (rbuf[0] == CMD_READ_SIGNATURE_ISP) {
     readSignature(sn);
-  }
+  } else if (rbuf[0] == CMD_READ_OSCCAL_ISP) {
+    readOSCCAL(sn);
+  } else if (rbuf[0] == CMD_SPI_MULTI) {
+    //SPIMulti(sn);
+  } 
 }
 
 uint8_t getch() {
@@ -322,6 +326,29 @@ uint8_t readSignature(uint8_t sn) {
   //sbuf[2] = spiTransaction(c1, c2, c3, c4);
   sbuf[2] = spiTransaction(c1, 0x00, c3, 0x00);
   //sbuf[2] = spiTransaction(0x30, 0x00, c3, 0x00);
+  sendMessage(sn, 4);
+}
+
+uint8_t readOSCCAL(uint8_t sn) {
+  uint8_t retAdr = rbuf[1], c1 = rbuf[2], c2 = rbuf[3], c3 = rbuf[4], c4 = rbuf[5];
+  
+  sbuf[0] = CMD_READ_OSCCAL_ISP;
+  sbuf[1] = STATUS_CMD_OK;
+  sbuf[3] = STATUS_CMD_OK;
+  
+  sbuf[2] = spiTransaction(c1, c2, c3, c4);
+  sendMessage(sn, 4);
+}
+
+//Not Implemented
+uint8_t SPIMulti(uint8_t sn) {
+  uint8_t numTx = rbuf[1], numRx = rbuf[2], rxStartAddr = rbuf[3];
+  
+  sbuf[0] = CMD_SPI_MULTI;
+  sbuf[1] = STATUS_CMD_OK;
+  //sbuf[3] = STATUS_CMD_OK;
+  
+  //sbuf[2] = spiTransaction(c1, c2, c3, c4);
   sendMessage(sn, 4);
 }
 
