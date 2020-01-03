@@ -13,9 +13,14 @@
 #define SW_MAJOR 0x02
 #define SW_MINOR 0x0a
 
+union Address{
+  uint8_t addr[4];
+  uint32_t addr32;
+};
+
 volatile uint8_t rbuf[275];
 volatile uint8_t sbuf[275];
-volatile uint32_t addr;
+volatile Address address;
 
 void setup() {
   pinMode(PIN_RESET, OUTPUT);
@@ -152,10 +157,8 @@ void getParameter(uint8_t sn) {
 }
 
 void loadAddress(uint8_t sn) {
-  //uint8_t a1 = rbuf[1], a2 = rbuf[2], a3 = rbuf[3], a4 = rbuf[4];
-  uint8_t *adr = (uint8_t*)&addr;
   for (uint8_t i = 0; i < 4; ++i) {
-    adr[3-i] = rbuf[1 + i];
+    address.addr[3-i] = rbuf[1 + i];
   }
   
   sbuf[0] = CMD_LOAD_ADDRESS;
@@ -219,7 +222,6 @@ uint8_t chipErase(uint8_t sn) {
 //Not Implemented byte and word Program
 void programFlash(uint8_t sn) {
   uint8_t numByteH = rbuf[1], numByteL = rbuf[2], mode = rbuf[3], pdelay = rbuf[4], c1 = rbuf[5], c2 = rbuf[6], c3 = rbuf[7], poll1 = rbuf[8], poll2 = rbuf[9];
-  uint8_t *ad = (uint8_t*)&addr;
   uint16_t numByte = numByteH;
   numByte <<= 8;
   numByte |= numByteL;
@@ -227,20 +229,20 @@ void programFlash(uint8_t sn) {
   sbuf[1] = STATUS_CMD_OK;
   if (mode & 0x01) {
     for (uint16_t i = 0; i < numByte; i += 2) {    
-      spiTransaction(c1, 0x00, ad[0], rbuf[10 + i]);
-      spiTransaction(c1 | 0x08, 0x00, ad[0], rbuf[11 + i]);
-      ++addr;
+      spiTransaction(c1, 0x00, address.addr[0], rbuf[10 + i]);
+      spiTransaction(c1 | 0x08, 0x00, address.addr[0], rbuf[11 + i]);
+      ++address.addr32;
     }
-    --addr;
+    --address.addr32;
     //writePage
     if (mode & 0x80 == 0x80) {
-      spiTransaction(c2, ad[1], ad[0], 0x00);
+      spiTransaction(c2, address.addr[1], address.addr[0], 0x00);
     }  
     //valuePolling
     if ((mode & 0x20)) {
-      while(spiTransaction(c3, ad[1], ad[0], 0x00) != poll1);
+      while(spiTransaction(c3, address.addr[1], address.addr[0], 0x00) != poll1);
     }
-    ++addr;
+    ++address.addr32;
     //RDY/BSY Polling
     if ((mode & 0x40)) {
       while(spiTransaction(0xf0, 0x00, 0x00, 0x00) & 0x01);
@@ -257,7 +259,6 @@ void programFlash(uint8_t sn) {
 
 uint8_t readFlash(uint8_t sn) {
   uint8_t numByteH = rbuf[1], numByteL = rbuf[2], c1 = rbuf[3];
-  uint8_t *ad = (uint8_t*)&addr;
   uint16_t numByte = numByteH;
   numByte <<= 8;
   numByte |= numByteL;
@@ -265,9 +266,9 @@ uint8_t readFlash(uint8_t sn) {
   sbuf[1] = STATUS_CMD_OK;
 
   for (uint16_t i = 0; i < numByte; i += 2) {
-    sbuf[i + 2] = spiTransaction(c1, ad[1], ad[0], 0x00);
-    sbuf[i + 3] = spiTransaction(c1 | 0x08, ad[1], ad[0], 0x00);
-    ++addr;
+    sbuf[i + 2] = spiTransaction(c1, address.addr[1], address.addr[0], 0x00);
+    sbuf[i + 3] = spiTransaction(c1 | 0x08, address.addr[1], address.addr[0], 0x00);
+    ++address.addr32;
   }
   sbuf[numByte + 2] = STATUS_CMD_OK;
   sendMessage(sn, numByte + 3);
