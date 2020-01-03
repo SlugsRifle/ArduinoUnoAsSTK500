@@ -55,6 +55,10 @@ void loop(void) {
     //programFuse(sn);
   } else if (rbuf[0] == CMD_READ_FUSE_ISP) {
     readFuse(sn);
+  } else if (rbuf[0] == CMD_PROGRAM_LOCK_ISP) {
+    //programLock(sn);
+  } else if (rbuf[0] == CMD_READ_LOCK_ISP) {
+    readLock(sn);
   } else if (rbuf[0] == CMD_READ_SIGNATURE_ISP) {
     readSignature(sn);
   }
@@ -264,17 +268,15 @@ uint8_t readFlash(uint8_t sn) {
   sendMessage(sn, numByte + 3);
 }
 
-uint8_t readSignature(uint8_t sn) {
-  uint8_t retAdr = rbuf[1], c1 = rbuf[2], c2 = rbuf[3], c3 = rbuf[4], c4 = rbuf[5];
+uint8_t programFuse(uint8_t sn) {
+  uint8_t c1 = rbuf[1], c2 = rbuf[2], c3 = rbuf[3], c4 = rbuf[4];
   
-  sbuf[0] = CMD_READ_SIGNATURE_ISP;
+  sbuf[0] = CMD_PROGRAM_FUSE_ISP;
   sbuf[1] = STATUS_CMD_OK;
-  sbuf[3] = STATUS_CMD_OK;
+  sbuf[2] = STATUS_CMD_OK;
   
-  //sbuf[2] = spiTransaction(c1, c2, c3, c4);
-  sbuf[2] = spiTransaction(c1, 0x00, c3, 0x00);
-  //sbuf[2] = spiTransaction(0x30, 0x00, c3, 0x00);
-  sendMessage(sn, 4);
+  spiTransaction(c1, c2, c3, c4);
+  sendMessage(sn, 3);
 }
 
 uint8_t readFuse(uint8_t sn) {
@@ -288,15 +290,39 @@ uint8_t readFuse(uint8_t sn) {
   sendMessage(sn, 4);
 }
 
-uint8_t programFuse(uint8_t sn) {
+uint8_t programLock(uint8_t sn) {
   uint8_t c1 = rbuf[1], c2 = rbuf[2], c3 = rbuf[3], c4 = rbuf[4];
   
-  sbuf[0] = CMD_PROGRAM_FUSE_ISP;
+  sbuf[0] = CMD_PROGRAM_LOCK_ISP;
   sbuf[1] = STATUS_CMD_OK;
   sbuf[2] = STATUS_CMD_OK;
   
   spiTransaction(c1, c2, c3, c4);
   sendMessage(sn, 3);
+}
+
+uint8_t readLock(uint8_t sn) {
+  uint8_t retAdr = rbuf[1], c1 = rbuf[2], c2 = rbuf[3], c3 = rbuf[4], c4 = rbuf[5];
+  
+  sbuf[0] = CMD_READ_LOCK_ISP;
+  sbuf[1] = STATUS_CMD_OK;
+  sbuf[3] = STATUS_CMD_OK;
+  
+  sbuf[2] = spiTransaction(c1, c2, c3, c4);
+  sendMessage(sn, 4);
+}
+
+uint8_t readSignature(uint8_t sn) {
+  uint8_t retAdr = rbuf[1], c1 = rbuf[2], c2 = rbuf[3], c3 = rbuf[4], c4 = rbuf[5];
+  
+  sbuf[0] = CMD_READ_SIGNATURE_ISP;
+  sbuf[1] = STATUS_CMD_OK;
+  sbuf[3] = STATUS_CMD_OK;
+  
+  //sbuf[2] = spiTransaction(c1, c2, c3, c4);
+  sbuf[2] = spiTransaction(c1, 0x00, c3, 0x00);
+  //sbuf[2] = spiTransaction(0x30, 0x00, c3, 0x00);
+  sendMessage(sn, 4);
 }
 
 //Not Implement TimeOut and CheckSumError
