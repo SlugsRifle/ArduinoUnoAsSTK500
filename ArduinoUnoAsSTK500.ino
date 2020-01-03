@@ -216,6 +216,7 @@ uint8_t chipErase(uint8_t sn) {
   sendMessage(sn, 2);
 }
 
+//Not Implemented byte and word Program
 void programFlash(uint8_t sn) {
   uint8_t numByteH = rbuf[1], numByteL = rbuf[2], mode = rbuf[3], pdelay = rbuf[4], c1 = rbuf[5], c2 = rbuf[6], c3 = rbuf[7], poll1 = rbuf[8], poll2 = rbuf[9];
   uint8_t *ad = (uint8_t*)&addr;
