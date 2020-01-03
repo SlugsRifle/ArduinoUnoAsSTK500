@@ -358,9 +358,6 @@ uint8_t recvMessage() {
 }
 
 void sendMessage(uint8_t sn, uint16_t size) {
-  /*static uint8_t sn = 0;
-  ++sn;*/
-  
   uint8_t hsize, lsize, cs;
   
   hsize = (size >> 8) & 0xff;
