@@ -13,6 +13,7 @@
 #define SW_MAJOR 0x02
 #define SW_MINOR 0x0a
 
+//AVR Little Endian
 union Address{
   uint8_t addr[4];
   uint32_t addr32;
