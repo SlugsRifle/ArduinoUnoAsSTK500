@@ -431,11 +431,9 @@ void sendMessage(uint8_t sn, uint16_t size) {
   Serial.write(hsize);
   Serial.write(lsize);  
   Serial.write(TOKEN);
-  Serial.flush();
   for (int i = 0; i < size; ++i) {
     Serial.write(sbuf[i]);
   }
-  Serial.flush();
   Serial.write(cs);
   Serial.flush();
 }
