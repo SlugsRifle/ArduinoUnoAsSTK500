@@ -365,13 +365,13 @@ uint8_t recvMessage() {
       ch = getch();
       cs ^= ch;
       if (ch == MESSAGE_START) { //0x1b
-        st = 1;
+        st = GET_SEQEUNCE_NUMBER;
       }
     } else if (st == GET_SEQEUNCE_NUMBER) {
       ch = getch();
       cs ^= ch;
       sn = ch;
-      st = 2;
+      st = GET_MESSAGE_SIZE_1;
       /*if (ch == sn) {
         st = 2;
         } else {
@@ -382,19 +382,19 @@ uint8_t recvMessage() {
       ms = ch;
       cs ^= ch;
       ms <<= 8;
-      st = 3;
+      st = GET_MESSAGE_SIZE_2;
     } else if (st == GET_MESSAGE_SIZE_2) {
       ch = getch();
       cs ^= ch;
       ms |= ch;
-      st = 4;
+      st = GET_TOKEN;
     } else if (st == GET_TOKEN) { //0x0e
       ch = getch();
       cs ^= ch;
       if (ch == TOKEN) {
-        st = 5;
+        st = GET_DATA;
         } else {
-        st = 0;
+        st = START;
       }
     } else if (st == GET_DATA) {
       if (count < ms) {
@@ -402,7 +402,7 @@ uint8_t recvMessage() {
         rbuf[count++] = ch;
         cs ^= ch;
         } else {
-        st = 6;
+        st = GET_CHECKSUM;
       }
     } else if (st == GET_CHECKSUM) {
       ch = getch();
@@ -414,7 +414,7 @@ uint8_t recvMessage() {
       }*/
     }
   }
-  return 0;
+  return -1;
 }
 
 void sendMessage(uint8_t sn, uint16_t size) {
