@@ -462,15 +462,3 @@ uint8_t calcSDKDuration(uint32_t freq) {
     sck_dur = ceil(1/(2 * 12.0 * freq * 135.63e-9) - 10 / 12.0);
   return min(254, sck_dur);
 }
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
