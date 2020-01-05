@@ -1,6 +1,4 @@
-#include <SPI.h>
-#include <EEPROM.h>
-
+#include "SPI.h"
 #include "command.h"
 
 #define PIN_RESET 10
@@ -9,13 +7,11 @@
 #define PIN_SCK   13
 
 #define BAUDRATE  115200
-//#define SPI_CLOCK 115200
+#define SPI_CLOCK 115200
 
 #define HW_VER 0x02
 #define SW_MAJOR 0x02
 #define SW_MINOR 0x0a
-
-uint32_t SCK_Duration = 0;
 
 //AVR Little Endian
 union Address{
@@ -28,8 +24,6 @@ volatile uint8_t sbuf[275];
 volatile Address address;
 
 void setup() {
-  SCK_Duration = EEPROM.read(0);
-  
   pinMode(PIN_RESET, OUTPUT);
   pinMode(PIN_MOSI, OUTPUT);
   pinMode(PIN_MISO, INPUT);
@@ -38,6 +32,9 @@ void setup() {
   digitalWrite(PIN_RESET, HIGH);
   
   Serial.begin(BAUDRATE);
+  
+  SPI.beginTransaction(SPISettings(SPI_CLOCK, MSBFIRST, SPI_MODE0));
+  SPI.setDataMode(SPI_MODE0);
 }
 
 void loop(void) {
@@ -111,8 +108,6 @@ void setParameter(uint8_t sn) {
   } else if (rbuf[1] == PARAM_OSC_CMATCH) { //0x97
     sbuf[2] = 0x00;
   } else if (rbuf[1] == PARAM_SCK_DURATION) { //0x98
-    SCK_Duration = rbuf[2];
-    EEPROM.write(0, rbuf[2]);
     sbuf[2] = 0x00;
   } else if (rbuf[1] == PARAM_RESET_POLARITY) { //0x98
     sbuf[2] = 0x00;
@@ -149,7 +144,7 @@ void getParameter(uint8_t sn) {
   } else if (rbuf[1] == PARAM_OSC_CMATCH) { //0x97
     sbuf[2] = 0x01;
   } else if (rbuf[1] == PARAM_SCK_DURATION) { //0x98
-    sbuf[2] = SCK_Duration;
+    sbuf[2] = 0x02;
   } else if (rbuf[1] == PARAM_TOPCARD_DETECT) { //0x9a
     sbuf[2] = 0x55;
   } else if (rbuf[1] == PARAM_CONTROLLER_INIT) { //0x9f
@@ -176,8 +171,6 @@ void enterProgramMode(uint8_t sn) {
   uint8_t timeout = rbuf[1], stabDelay = rbuf[2], cmdexeDelay = rbuf[3], synchLoops = rbuf[4],
   byteDelay = rbuf[5], pollValue = rbuf[6], pollIndex = rbuf[7], c1 = rbuf[8], c2 = rbuf[9],
   c3 = rbuf[10], c4 = rbuf[11];
-
-  SPI.beginTransaction(SPISettings(s2f(SCK_Duration), MSBFIRST, SPI_MODE0));
   
   sbuf[0] = CMD_ENTER_PROGMODE_ISP;
   sbuf[1] = STATUS_CMD_OK;
@@ -212,8 +205,6 @@ void leaveProgramMode(uint8_t sn) {
   digitalWrite(PIN_RESET, HIGH);
 
   delay(postDelay);
-
-  SPI.endTransaction();
   
   sendMessage(sn, 2);
 }
@@ -457,22 +448,7 @@ uint8_t spiTransaction(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   return SPI.transfer(d);
 }
 
-uint32_t s2f(uint8_t sck) {
-  uint8_t freq;
-  if (freq == 0)
-    freq = 1843200;
-  else if (freq == 1)
-    freq = 460800;
-  else if (freq = 2)
-    freq = 115200;
-  else if (freq == 3)
-    freq = 57600;
-  else
-    freq = (1/(2 * 12.0 * 135.63e-9 * (sck + (10 / 12.0))));
-  return freq;
-}
-
-uint8_t f2s(uint32_t freq) {
+uint8_t calcSDKDuration(uint32_t freq) {
   uint8_t sck_dur;
   if (freq >= 1843200)
     sck_dur = 0;
@@ -486,3 +462,15 @@ uint8_t f2s(uint32_t freq) {
     sck_dur = ceil(1/(2 * 12.0 * freq * 135.63e-9) - 10 / 12.0);
   return min(254, sck_dur);
 }
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
