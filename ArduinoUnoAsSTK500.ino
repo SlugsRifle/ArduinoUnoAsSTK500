@@ -8,6 +8,8 @@
 
 #define BAUDRATE  115200
 #define SPI_CLOCK 115200
+//#define SPI_CLOCK 460800
+//#define SPI_CLOCK 1843200
 
 #define HW_VER 0x02
 #define SW_MAJOR 0x02
@@ -30,7 +32,6 @@ void setup() {
   pinMode(PIN_SCK, OUTPUT);
   
   digitalWrite(PIN_RESET, HIGH);
-  
   Serial.begin(BAUDRATE);
   
   SPI.beginTransaction(SPISettings(SPI_CLOCK, MSBFIRST, SPI_MODE0));
@@ -144,7 +145,7 @@ void getParameter(uint8_t sn) {
   } else if (rbuf[1] == PARAM_OSC_CMATCH) { //0x97
     sbuf[2] = 0x01;
   } else if (rbuf[1] == PARAM_SCK_DURATION) { //0x98
-    sbuf[2] = 0x02;
+    sbuf[2] = calcSDKDuration(SPI_CLOCK);
   } else if (rbuf[1] == PARAM_TOPCARD_DETECT) { //0x9a
     sbuf[2] = 0x55;
   } else if (rbuf[1] == PARAM_CONTROLLER_INIT) { //0x9f
