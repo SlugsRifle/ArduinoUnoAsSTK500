@@ -1,4 +1,4 @@
-#define MESSAGE_START                       0x1B        //= ESC = 27 decimal
+#define MESSAGE_START                       0x1B
 #define TOKEN                               0x0E
 #define CMD_SIGN_ON                         0x01
 #define CMD_SET_PARAMETER                   0x02
